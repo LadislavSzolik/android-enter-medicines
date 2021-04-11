@@ -14,6 +14,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -53,7 +54,6 @@ fun CaptureInvoiceNav(medicineViewModel: MedicineViewModel) {
 
     NavHost(
         navController = navController,
-        // TODO: change back to welcome
         startDestination = "welcome"
     ) {
         composable("welcome") {
@@ -143,7 +143,10 @@ fun NewOrderScreen(navController: NavController, medicineViewModel: MedicineView
                         .weight(1f), style = MaterialTheme.typography.h6
                 )
                 Button(
-                    onClick = { navController.navigate("new_medicine") },
+                    onClick = {
+                        medicineViewModel.onMedicineChange("")
+                        navController.navigate("new_medicine")
+                              },
                     Modifier
                         .wrapContentWidth(Alignment.End)
                         .weight(1f)
@@ -207,7 +210,6 @@ fun NewMedicineScreen(navController: NavController, medicineViewModel: MedicineV
             Toast.makeText(context, "Select medicine first", Toast.LENGTH_SHORT).show()
         } else {
             medicineViewModel.newMedicines.add(selectedMedicine.value.toString())
-            medicineViewModel.onMedicineChange("")
             navController.navigate("new_order")
         }
     }
@@ -305,6 +307,7 @@ fun SearchMedicineScreen(navController: NavController, medicineViewModel: Medici
     val lazyPagingItems = medicineViewModel.medicineFlow.collectAsLazyPagingItems()
     val selectedMedicine = medicineViewModel.selectedMedicine.observeAsState(initial = "")
 
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -346,6 +349,27 @@ fun SearchMedicineScreen(navController: NavController, medicineViewModel: Medici
                     } else {
                         Text(text = "loading...")
                     }
+                }
+            }
+            if(lazyPagingItems.itemCount == 0) {
+                OutlinedButton(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top=16.dp)
+                    .height(50.dp)
+                    .align(Alignment.Start),
+                    onClick = {
+
+                        medicineViewModel.onMedicineChange(searchQuery)
+                        medicineViewModel.onSearchQueryChange("")
+                        navController.popBackStack()
+                    }) {
+                    Icon(
+                        Icons.Filled.Create,
+                        contentDescription = "Create"
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text("Add medicine '${searchQuery}'")
+
                 }
             }
         }
